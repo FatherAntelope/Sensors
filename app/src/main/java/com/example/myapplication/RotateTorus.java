@@ -4,7 +4,7 @@ import java.util.Arrays;
 
 public class RotateTorus {
     // Толщина бублика
-    private final float R1 = 0.5f;
+    private final float R1 = 0.7f;
 
     // Радиус бублика
     private final float R2 = 2;

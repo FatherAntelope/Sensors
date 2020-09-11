@@ -4,28 +4,30 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.DialogInterface;
+import android.graphics.Color;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
+import android.media.MediaRecorder;
 import android.os.Bundle;
 import android.widget.TextView;
 
 public class MainActivity extends AppCompatActivity {
-    TextView textViewX, textViewY, textViewZ, textViewLight, textViewDonut;
+    TextView textViewX, textViewY, textViewZ, textViewLight, textViewDonut, textViewDistance;
     RotateTorus rotateTorus;
-    String textDonut;
-    float X, Y, Z, Light;
+    String textDonut, HEX;
+    float X, Y, Z, Light, Distance;
     float stepRotX;
     float stepRotY;
 
     //Отвечает за все сенсоры в устройстве
     SensorManager sensorManager;
     //Отвечает за конкретный сенсор устройства
-    Sensor sensorPosition, sensorDistance;
+    Sensor sensorPosition, sensorLight, sensorDistance;
     //Мой класс для хранения данных датчиков
     SensorsData sensorsData = new SensorsData(0, 0, 0, 0);
-    boolean isSensorPositionPresent, isSensorDistancePresent, isRotateY, isRotateX;
+    boolean isSensorPositionPresent, isSensorLightPresent, isSensorDistancePresent, isRotateY, isRotateX;
 
     //считывает сенсоры
     @Override
@@ -33,8 +35,9 @@ public class MainActivity extends AppCompatActivity {
         super.onResume();
         //проверяем наличие датчиков
 
-        if(isSensorPositionPresent && isSensorDistancePresent) {
+        if(isSensorPositionPresent && isSensorLightPresent && isSensorDistancePresent) {
             sensorManager.registerListener(sensorEventListenerPosition, sensorPosition, SensorManager.SENSOR_DELAY_UI );
+            sensorManager.registerListener(sensorEventListenerLight, sensorLight, SensorManager.SENSOR_DELAY_UI );
             sensorManager.registerListener(sensorEventListenerDistance, sensorDistance, SensorManager.SENSOR_DELAY_UI );
         }
     }
@@ -44,8 +47,9 @@ public class MainActivity extends AppCompatActivity {
     protected void onPause() {
         super.onPause();
         //проверяем наличие датчиков
-        if(isSensorPositionPresent && isSensorDistancePresent) {
+        if(isSensorPositionPresent && isSensorLightPresent) {
             sensorManager.unregisterListener(sensorEventListenerPosition);
+            sensorManager.unregisterListener(sensorEventListenerLight);
             sensorManager.unregisterListener(sensorEventListenerDistance);
         }
     }
@@ -57,14 +61,6 @@ public class MainActivity extends AppCompatActivity {
             X = sensorEvent.values[0];
             Y = sensorEvent.values[1];
             Z = sensorEvent.values[2];
-            //sensorsData.setX(X);
-            //sensorsData.setY(Y);
-            //sensorsData.setZ(Z);
-
-            System.out.println("\n");
-            System.out.println("X: " + X);
-            System.out.println("Y: " + Y);
-            System.out.println("Z: " + Z);
 
             textViewX.setText("X: " + X);
             textViewY.setText("Y: " + Y);
@@ -75,14 +71,7 @@ public class MainActivity extends AppCompatActivity {
                 stepRotY += 0.04f;
             }
 
-
-
             textDonut = rotateTorus.getTorus(-X, -Y, stepRotX, stepRotY);
-
-
-            // Z < 0 == за нами находится, я хз, это же тело вращения, ща придумаю
-
-
             textViewDonut.setText(textDonut);
         }
 
@@ -91,25 +80,40 @@ public class MainActivity extends AppCompatActivity {
     };
 
     //прослушивает сенсор света
-    SensorEventListener sensorEventListenerDistance = new SensorEventListener() {
+    SensorEventListener sensorEventListenerLight = new SensorEventListener() {
         @Override
         public void onSensorChanged(SensorEvent sensorEvent) {
             Light = sensorEvent.values[0];
             //sensorsData.setBrightness(Light);
 
-            if(Light == 5) {
+
+            textViewLight.setText("Light: " + Light);
+
+            HEX = "#" + Integer.toHexString((int)Light * (-1));
+
+            textViewDonut.setTextColor(Color.parseColor(HEX));
+            textViewDonut.setTextSize(20);
+        }
+        @Override
+        public void onAccuracyChanged(Sensor sensor, int i) {}
+    };
+
+    //прослушивает сенсор дистанции
+    SensorEventListener sensorEventListenerDistance = new SensorEventListener() {
+        @Override
+        public void onSensorChanged(SensorEvent sensorEvent) {
+            Distance = sensorEvent.values[0];
+            //sensorsData.setBrightness(Light);
+
+            if(Distance == 5) {
                 isRotateY = true;
                 isRotateX = false;
-            } else if (Light == 0) {
+            } else if (Distance == 0) {
                 isRotateY = false;
                 isRotateX = true;
             }
 
-            System.out.println("Distance: " + Light);
-            textViewLight.setText("Distance: " + Light);
-
-            textViewDonut.setTextSize(20);
-            //textViewDonut.setText("Пончик");
+            textViewDistance.setText("Distance: " + Distance);
         }
         @Override
         public void onAccuracyChanged(Sensor sensor, int i) {}
@@ -125,23 +129,26 @@ public class MainActivity extends AppCompatActivity {
         textViewY = findViewById(R.id.textViewY);
         textViewZ = findViewById(R.id.textViewZ);
         textViewLight = findViewById(R.id.textViewLight);
+        textViewDistance = findViewById(R.id.textViewDistance);
         textViewDonut = findViewById(R.id.textViewDonut);
-        
+
         rotateTorus = new RotateTorus();
         //достаем все датчики
         sensorManager = (SensorManager)getSystemService(SENSOR_SERVICE);
-        //достаем сенсор магнитного поля
+        //достаем сенсор акселерометр
         sensorPosition = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
         //достаем сенсор освещенности
+        sensorLight = sensorManager.getDefaultSensor(Sensor.TYPE_LIGHT);
+        //достаем сенсор дистанции
         sensorDistance = sensorManager.getDefaultSensor(Sensor.TYPE_PROXIMITY);
 
         //если датчики отсутствуют, то грустим
-        if(sensorPosition != null && sensorDistance != null) {
+        if(sensorPosition != null && sensorLight != null) {
             stepRotX = 0; stepRotY = 0;
             rotateTorus = new RotateTorus();
             isSensorPositionPresent = true;
-            isSensorDistancePresent = true;
-
+            isSensorLightPresent = true;
+            isSensorDistancePresent= true;
         }
 
     }
