@@ -88,8 +88,12 @@ public class MainActivity extends AppCompatActivity {
 
 
             textViewLight.setText("Light: " + Light);
+            if(Light != 0) {
+                HEX = "#" + Integer.toHexString((int)Light * (-1));
+            } else {
+                HEX = "#FFFFFF";
+            }
 
-            HEX = "#" + Integer.toHexString((int)Light * (-1));
 
             textViewDonut.setTextColor(Color.parseColor(HEX));
             textViewDonut.setTextSize(20);
@@ -111,6 +115,9 @@ public class MainActivity extends AppCompatActivity {
             } else if (Distance == 0) {
                 isRotateY = false;
                 isRotateX = true;
+            } else {
+                isRotateY = false;
+                isRotateX = false;
             }
 
             textViewDistance.setText("Distance: " + Distance);
