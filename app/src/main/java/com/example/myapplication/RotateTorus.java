@@ -3,10 +3,10 @@ package com.example.myapplication;
 import java.util.Arrays;
 
 public class RotateTorus {
-    // Толщина бублика
+    // Толщина тора
     private final float R1 = 0.7f;
 
-    // Радиус бублика
+    // Радиус тора
     private final float R2 = 2;
 
     // FOV
