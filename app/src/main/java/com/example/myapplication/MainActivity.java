@@ -1,15 +1,12 @@
 package com.example.myapplication;
 
-import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
-import android.content.DialogInterface;
 import android.graphics.Color;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
-import android.media.MediaRecorder;
 import android.os.Bundle;
 import android.widget.TextView;
 
@@ -21,13 +18,16 @@ public class MainActivity extends AppCompatActivity {
     float stepRotX;
     float stepRotY;
 
+    boolean isSensorPositionPresent, isSensorLightPresent, isSensorDistancePresent, isRotateY, isRotateX;
+
     //Отвечает за все сенсоры в устройстве
     SensorManager sensorManager;
     //Отвечает за конкретный сенсор устройства
     Sensor sensorPosition, sensorLight, sensorDistance;
     //Мой класс для хранения данных датчиков
     SensorsData sensorsData = new SensorsData(0, 0, 0, 0);
-    boolean isSensorPositionPresent, isSensorLightPresent, isSensorDistancePresent, isRotateY, isRotateX;
+
+
 
     //считывает сенсоры
     @Override
